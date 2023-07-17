@@ -1,22 +1,24 @@
-const express = require('express');
+/** @format */
 
-const counter_route = require('./routes/counter_route');
-
-const not_found_handler = require('./errors/not_found');
-const error_handler = require('./errors/error_handler');
-
+const express = require("express");
+const mongoose = require("mongoose");
+const createDemoUser = require("./seed");
 const app = express();
 
-app.use('/counter', counter_route)
+// app.use(not_found_handler, error_handler);s
 
+const PORT = process.env.PORT || 4444;
 
-app.get('/', (_req, res) => {
-    res.send('This is root page');
-})
-
-app.use(not_found_handler, error_handler);
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT , ()=>{
-    console.log(`listening on port ${PORT}`);
-});
+mongoose
+    .connect("mongodb://localhost:27017/mon-demo")
+    .then(() => {
+        console.log("Connected to MongoDB");
+        createDemoUser();
+        app.listen(PORT, () => {
+            console.log(`listening on port ${PORT}`);
+        });
+    })
+    .catch((err) => {
+        console.log(err);
+        mongoose.connection.close();
+    });
